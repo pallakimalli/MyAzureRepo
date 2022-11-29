@@ -1,0 +1,1017 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "apim_name_prefix": { 
+             "type": "String",
+             "metadata": {
+             "description": "Apim Nmae prefix used in the resource name"
+           }
+        },
+    /*Environment will override with pipeline variable*/
+        "environment": {
+            "type": "String",
+            "metadata": {
+            "description": "Name of the Environment to where we deploy the resource"
+           }
+        },
+    /*Location will override with pipeline variable*/
+        "location_prefix": {
+             "type": "string",
+             "metadata": {
+             "description": "Location prefix used in the resource name"
+           }
+        },   
+        /*This will override with pipeline variable*/    
+         "appinsights_name": {
+              "type": "string"
+        },
+        /*This will override with pipeline variable*/ 
+           "transferauth_topickeyname": {
+               "type": "string"
+        },
+        /*This will override with pipeline variable*/ 
+           "transferauth_topicsaskey": {
+               "type": "string"
+        },
+        /*This will override with pipeline variable*/ 
+        "transferauth_topicendpoint": {
+            "type": "string"
+        },
+        /*This will override with pipeline variable*/ 
+           "serviceUpdate_topickeyname":{
+                "type": "string"
+        },
+        /*This will override with pipeline variable*/ 
+           "serviceUpdate_topicsaskey":{
+                "type": "string"
+        },
+        /*This will override with pipeline variable*/ 
+            "serviceUpdate_topicendpoint":{
+                 "type": "string"
+        },
+        /*This will override with pipeline variable*/ 
+             "storageaccount_name":{
+                 "type": "string"
+        },
+        "transferauthorization_API_path":{
+            "type": "string"
+        },
+        "transferauthorizationfiles_API_path":{
+            "type": "string"
+        }
+      
+    },
+    "variables": {
+        "apim_name": "[concat(parameters('apim_name_prefix'),'-', parameters('environment'), '-', parameters('location_prefix'), '-', '001' )]",
+        "location": "[resourceGroup().location]"
+       
+    },
+    "resources": [
+        {
+            "type": "Microsoft.ApiManagement/service",
+            "apiVersion": "2020-12-01",
+            "name": "[variables('apim_name')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "Basic",
+                "capacity": 1
+            },
+             "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
+                "publisherEmail": "Mrp02@neirelocation.com",
+                "publisherName": "NEIGlobal",
+                "notificationSenderEmail": "apimgmt-noreply@mail.windowsazure.com",
+                "hostnameConfigurations": [
+                    {
+                        "type": "Proxy",
+                        "hostName": "[concat(variables('apim_name'), '.azure-api.net')]",
+                        "negotiateClientCertificate": false,
+                        "defaultSslBinding": true,
+                        "certificateSource": "BuiltIn"
+                    }
+                ],
+            
+                "virtualNetworkType": "None",
+                "disableGateway": false,
+                "apiVersionConstraint": {},
+                "publicNetworkAccess": "Enabled"
+            },
+            "tags": {
+                "Environment": "[parameters('environment')]",
+                "Project": "NEIGlobal Orbit Integration"
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/echo-api')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "Echo API",
+                "apiRevision": "1",
+                "subscriptionRequired": true,
+                "serviceUrl": "http://echoapi.cloudapp.net/api",
+                "path": "echo",
+                "protocols": [
+                    "https"
+                ],
+                "isCurrent": true
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/servicelevelupdate')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "servicelevelupdate",
+                "apiRevision": "1",
+                "subscriptionRequired": true,
+                "serviceUrl": "[concat(parameters('serviceUpdate_topicendpoint'),'/','messages')]",
+                "path": "api/serviceupdates",
+                "protocols": [
+                    "https"
+                ],
+                "isCurrent": true
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/testapi')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "TestAPI",
+                "apiRevision": "1",
+                "subscriptionRequired": true,
+                "protocols": [
+                    "https"
+                ],
+                "isCurrent": true,
+                "path": "/test"              
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/transferauthorization')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "transferauthorization",
+                "apiRevision": "1",
+                "subscriptionRequired": true,
+                "serviceUrl": "[concat(parameters('transferauth_topicendpoint'),'/','messages')]",
+                "path": "[parameters('transferauthorization_API_path')]",
+                "protocols": [
+                    "https"
+                ],
+                "isCurrent": true
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/transferauthorizationfiles')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "TransferAuthorizationFiles",
+                "apiRevision": "1",
+                "description": "API to handle files related to transfer authorization requests.",
+                "subscriptionRequired": true,
+                "serviceUrl": "https://logic-oi-transferauth-dev-cus-001.azurewebsites.net:443/api/FileUpload/triggers/manual/invoke?api-version=2020-05-01-preview&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=GjjtpEpdZYgk2j7E-_K3GuuoKac6lVvNPRHCRNs6nFI",
+                "path": "[parameters('transferauthorizationfiles_API_path')]",
+                "protocols": [
+                    "https"
+                ],
+                "isCurrent": true
+            }
+        },
+       {
+            "type": "Microsoft.ApiManagement/service/loggers",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/',parameters('appinsights_name'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "loggerType": "applicationInsights",
+                "description": "Logger resources to APIM",
+                "credentials": {
+                    "instrumentationKey": "[reference(resourceId('Microsoft.Insights/components', parameters('appinsights_name')), '2015-05-01').InstrumentationKey]"
+                },
+                "isBuffered": true,
+                "resourceId": "[resourceId('Microsoft.Insights/components', parameters('appinsights_name'))]"
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/namedValues",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/TransferAuthorizationKeyName')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "TransferAuthorizationKeyName",
+                "secret": true ,
+                "value": "[parameters('transferauth_topickeyname')]"
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/namedValues",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/TransferAuthorizationKey')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "TransferAuthorizationKey",
+                "secret": true ,
+                "value": "[parameters('transferauth_topicsaskey')]"
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/namedValues",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/TransferAuthorizationResourceUri')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "TransferAuthorizationResourceUri",
+                "secret": true ,
+                "value": "[parameters('transferauth_topicendpoint')]"
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/namedValues",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/ServiceUpdateKeyName')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "ServiceUpdateKeyName",
+                "secret": true ,
+                "value": "[parameters('serviceUpdate_topickeyname')]"
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/namedValues",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/ServiceUpdateKey')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "ServiceUpdateKey",
+                "secret": true ,
+                "value": "[parameters('serviceUpdate_topicsaskey')]"
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/namedValues",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/ServiceUpdateResourceUri')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "ServiceUpdateResourceUri",
+                "secret": true ,
+                "value": "[parameters('serviceUpdate_topicendpoint')]"
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/namedValues",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/StorageAccountName')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "StorageAccountName",
+                "value": "[parameters('storageaccount_name')]",
+                "tags": [],
+                "secret": false
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/namedValues",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/TransferAuthFileContainer')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "TransferAuthFileContainer",
+                "value": "transferauthfiles",
+                "tags": [],
+                "secret": false
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/namedValues",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/TransferAuthPayLoadContainer')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "TransferAuthPayLoadContainer",
+                "value": "transferauthpayloadcontainer",
+                "tags": [],
+                "secret": false
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/namedValues",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/UpdateValidatorWorkflowURL')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "UpdateValidatorWorkflowURL",
+                "value": "https://prod-07.centralus.logic.azure.com/workflows/sampleid/triggers/manual/paths/invoke/",
+                "tags": [],
+                "secret": true
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/namedValues",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/FileUploadWorkflowURL')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "FileUploadWorkflowURL",
+                "value": "https://prod-07.centralus.logic.azure.com/workflows/sampleid/triggers/manual/paths/invoke/",
+                "tags": [],
+                "secret": true
+            }
+        },  
+        {
+            "type": "Microsoft.ApiManagement/service/apis/diagnostics",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/servicelevelupdate/applicationinsights')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/apis', variables('apim_name'), 'servicelevelupdate')]",
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]",
+                "[resourceId('Microsoft.ApiManagement/service/loggers', variables('apim_name'), parameters('appinsights_name'))]"
+            ],
+            "properties": {
+                "alwaysLog": "allErrors",
+                "httpCorrelationProtocol": "W3C",
+                "verbosity": "information",
+                "logClientIp": true,
+                "loggerId": "[resourceId('Microsoft.ApiManagement/service/loggers', variables('apim_name'), parameters('appinsights_name'))]",
+                "sampling": {
+                    "samplingType": "fixed",
+                    "percentage": 100
+                },
+                "frontend": {
+                    "request": {
+                        "headers": [
+                            "x-correlation-id",
+                            "X-Forwarded-For",
+                            "x-ms-client-tracking-id",
+                            "ErrorMessage",
+                            "ErrorStatusCode"
+                        ],
+                        "body": {
+                            "bytes": 8192
+                        }
+                    },
+                    "response": {
+                        "headers": [],
+                        "body": {
+                            "bytes": 0
+                        }
+                    }
+                },
+                "backend": {
+                    "request": {
+                        "headers": [
+                            "x-correlation-id",
+                            "X-Forwarded-For",
+                            "x-ms-client-tracking-id",
+                            "ErrorMessage",
+                            "ErrorStatusCode"
+                        ],
+                        "body": {
+                            "bytes": 8192
+                        }
+                    },
+                    "response": {
+                        "headers": [],
+                        "body": {
+                            "bytes": 0
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis/diagnostics",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/transferauthorization/applicationinsights')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/apis', variables('apim_name'), 'transferauthorization')]",
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]",
+                "[resourceId('Microsoft.ApiManagement/service/loggers', variables('apim_name'), parameters('appinsights_name'))]"
+            ],
+            "properties": {
+                "alwaysLog": "allErrors",
+                "httpCorrelationProtocol": "W3C",
+                "verbosity": "information",
+                "logClientIp": true,
+                "loggerId": "[resourceId('Microsoft.ApiManagement/service/loggers', variables('apim_name'), parameters('appinsights_name'))]",
+                "sampling": {
+                    "samplingType": "fixed",
+                    "percentage": 100
+                },
+                "frontend": {
+                    "request": {
+                        "headers": [
+                            "x-correlation-id",
+                            "X-Forwarded-For",
+                            "x-ms-client-tracking-id",
+                            "ErrorMessage",
+                            "ErrorStatusCode"
+                        ],
+                        "body": {
+                            "bytes": 8192
+                        }
+                    },
+                    "response": {
+                        "headers": [],
+                        "body": {
+                            "bytes": 0
+                        }
+                    }
+                },
+                "backend": {
+                    "request": {
+                        "headers": [
+                            "x-correlation-id",
+                            "X-Forwarded-For",
+                            "x-ms-client-tracking-id",
+                            "ErrorStatusCode",
+                            "ErrorMessage"
+                        ],
+                        "body": {
+                            "bytes": 8192
+                        }
+                    },
+                    "response": {
+                        "headers": [],
+                        "body": {
+                            "bytes": 0
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis/diagnostics",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/transferauthorizationfiles/applicationinsights')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/apis', variables('apim_name'), 'transferauthorizationfiles')]",
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]",
+                "[resourceId('Microsoft.ApiManagement/service/loggers', variables('apim_name'), parameters('appinsights_name'))]"
+        
+            ],
+            "properties": {
+                "alwaysLog": "allErrors",
+                "httpCorrelationProtocol": "W3C",
+                "verbosity": "information",
+                "logClientIp": true,
+                "loggerId": "[resourceId('Microsoft.ApiManagement/service/loggers', variables('apim_name'), parameters('appinsights_name'))]",
+                "sampling": {
+                    "samplingType": "fixed",
+                    "percentage": 100
+                },
+                "frontend": {
+                    "request": {
+                        "headers": [],
+                        "body": {
+                            "bytes": 8192
+                        }
+                    },
+                    "response": {
+                        "headers": [],
+                        "body": {
+                            "bytes": 8192
+                        }
+                    }
+                },
+                "backend": {
+                    "request": {
+                        "headers": [],
+                        "body": {
+                            "bytes": 8192
+                        }
+                    },
+                    "response": {
+                        "headers": [],
+                        "body": {
+                            "bytes": 8192
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis/diagnostics/loggers",
+            "apiVersion": "2018-01-01",
+            "name": "[concat(variables('apim_name'), '/servicelevelupdate/applicationinsights/', parameters('appinsights_name'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/apis/diagnostics', variables('apim_name'), 'servicelevelupdate', 'applicationinsights')]",
+                "[resourceId('Microsoft.ApiManagement/service/apis', variables('apim_name'), 'servicelevelupdate')]",
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis/diagnostics/loggers",
+            "apiVersion": "2018-01-01",
+            "name": "[concat(variables('apim_name'), '/transferauthorization/applicationinsights/', parameters('appinsights_name'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/apis/diagnostics', variables('apim_name'), 'transferauthorization', 'applicationinsights')]",
+                "[resourceId('Microsoft.ApiManagement/service/apis', variables('apim_name'), 'transferauthorization')]",
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis/diagnostics/loggers",
+            "apiVersion": "2018-01-01",
+            "name": "[concat(variables('apim_name'), '/transferauthorizationfiles/applicationinsights/', parameters('appinsights_name'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/apis/diagnostics', variables('apim_name'), 'transferauthorizationfiles', 'applicationinsights')]",
+                "[resourceId('Microsoft.ApiManagement/service/apis', variables('apim_name'), 'transferauthorizationfiles')]",
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis/operations",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/echo-api/create-resource')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/apis', variables('apim_name'), 'echo-api')]",
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "Create resource",
+                "method": "POST",
+                "urlTemplate": "/resource",
+                "templateParameters": [],
+                "description": "A demonstration of a POST call based on the echo backend above. The request body is expected to contain JSON-formatted data (see example below). A policy is used to automatically transform any request sent in JSON directly to XML. In a real-world scenario this could be used to enable modern clients to speak to a legacy backend.",
+                "request": {
+                    "queryParameters": [],
+                    "headers": [],
+                    "representations": [
+                        {
+                            "contentType": "application/json"
+                        }
+                    ]
+                },
+                "responses": [
+                    {
+                        "statusCode": 200,
+                        "representations": [],
+                        "headers": []
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis/operations",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/transferauthorizationfiles/file-upload')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/apis', variables('apim_name'), 'transferauthorizationfiles')]",
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "File upload",
+                "method": "POST",
+                "urlTemplate": "/",
+                "templateParameters": [],
+                "description": "File upload",
+                "request": {
+                    "queryParameters": [],
+                    "headers": [],
+                    "representations": [
+                        {
+                            "contentType": "multipart/form-data"
+                        }
+                    ]
+                },
+                "responses": [
+                    {
+                        "statusCode": 200,
+                        "description": "null",
+                        "representations": [],
+                        "headers": []
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis/operations",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/echo-api/modify-resource')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/apis', variables('apim_name'), 'echo-api')]",
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "Modify Resource",
+                "method": "PUT",
+                "urlTemplate": "/resource",
+                "templateParameters": [],
+                "description": "A demonstration of a PUT call handled by the same \"echo\" backend as above. You can now specify a request body in addition to headers and it will be returned as well.",
+                "responses": [
+                    {
+                        "statusCode": 200,
+                        "representations": [],
+                        "headers": []
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis/operations",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/transferauthorization/postapi')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/apis', variables('apim_name'), 'transferauthorization')]",
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "PostApi",
+                "method": "POST",
+                "urlTemplate": "/",
+                "templateParameters": [],
+                "description": "PostApi",
+                "responses": [
+                    {
+                        "statusCode": 200,
+                        "representations": [],
+                        "headers": []
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis/operations",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/servicelevelupdate/postserviceupdates')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/apis', variables('apim_name'), 'servicelevelupdate')]",
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "postserviceupdates",
+                "method": "POST",
+                "urlTemplate": "/",
+                "templateParameters": [],
+                "responses": []
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis/operations",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/echo-api/remove-resource')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/apis', variables('apim_name'), 'echo-api')]",
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "Remove resource",
+                "method": "DELETE",
+                "urlTemplate": "/resource",
+                "templateParameters": [],
+                "description": "A demonstration of a DELETE call which traditionally deletes the resource. It is based on the same \"echo\" backend as in all other operations so nothing is actually deleted.",
+                "responses": [
+                    {
+                        "statusCode": 200,
+                        "representations": [],
+                        "headers": []
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis/operations",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/echo-api/retrieve-header-only')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/apis', variables('apim_name'), 'echo-api')]",
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "Retrieve header only",
+                "method": "HEAD",
+                "urlTemplate": "/resource",
+                "templateParameters": [],
+                "description": "The HEAD operation returns only headers. In this demonstration a policy is used to set additional headers when the response is returned and to enable JSONP.",
+                "responses": [
+                    {
+                        "statusCode": 200,
+                        "representations": [],
+                        "headers": []
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis/operations",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/echo-api/retrieve-resource')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/apis', variables('apim_name'), 'echo-api')]",
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "Retrieve resource",
+                "method": "GET",
+                "urlTemplate": "/resource",
+                "templateParameters": [],
+                "description": "A demonstration of a GET call on a sample resource. It is handled by an \"echo\" backend which returns a response equal to the request (the supplied headers and body are being returned as received).",
+                "request": {
+                    "queryParameters": [
+                        {
+                            "name": "param1",
+                            "description": "A sample parameter that is required and has a default value of \"sample\".",
+                            "type": "string",
+                            "defaultValue": "sample",
+                            "required": true,
+                            "values": [
+                                "sample"
+                            ]
+                        },
+                        {
+                            "name": "param2",
+                            "description": "Another sample parameter, set to not required.",
+                            "type": "number",
+                            "values": []
+                        }
+                    ],
+                    "headers": [],
+                    "representations": []
+                },
+                "responses": [
+                    {
+                        "statusCode": 200,
+                        "description": "Returned in all cases.",
+                        "representations": [],
+                        "headers": []
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis/operations",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/echo-api/retrieve-resource-cached')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/apis', variables('apim_name'), 'echo-api')]",
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "Retrieve resource (cached)",
+                "method": "GET",
+                "urlTemplate": "/resource-cached",
+                "templateParameters": [],
+                "description": "A demonstration of a GET call with caching enabled on the same \"echo\" backend as above. Cache TTL is set to 1 hour. When you make the first request the headers you supplied will be cached. Subsequent calls will return the same headers as the first time even if you change them in your request.",
+                "request": {
+                    "queryParameters": [
+                        {
+                            "name": "param1",
+                            "description": "A sample parameter that is required and has a default value of \"sample\".",
+                            "type": "string",
+                            "defaultValue": "sample",
+                            "required": true,
+                            "values": [
+                                "sample"
+                            ]
+                        },
+                        {
+                            "name": "param2",
+                            "description": "Another sample parameter, set to not required.",
+                            "type": "string",
+                            "values": []
+                        }
+                    ],
+                    "headers": [],
+                    "representations": []
+                },
+                "responses": [
+                    {
+                        "statusCode": 200,
+                        "representations": [],
+                        "headers": []
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis/operations",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/testapi/testpostmethod')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/apis', variables('apim_name'), 'testapi')]",
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "displayName": "TestPostMethod",
+                "method": "POST",
+                "urlTemplate": "/test",
+                "templateParameters": [],
+                "responses": [
+                    {
+                        "statusCode": 200,
+                        "representations": [
+                            {
+                                "contentType": "application/json",
+                                "examples": {
+                                    "default": {
+                                        "value": {}
+                                    }
+                                }
+                            }
+                        ],
+                        "headers": []
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis/operations",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/transferauthorization/patchapi')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/apis', variables('apim_name'), 'transferauthorization')]",
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+             "properties": {
+                "displayName": "PatchApi",
+                "method": "PATCH",
+                "urlTemplate": "/update",
+                "templateParameters": [],
+                "description": "PatchApi",
+                "responses": [
+                    {
+                        "statusCode": 200,
+                        "description": "null",
+                        "representations": [],
+                        "headers": []
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis/policies",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/servicelevelupdate/policy')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/apis', variables('apim_name'), 'servicelevelupdate')]",
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "value": "<!--\r\n    IMPORTANT:\r\n    - Policy elements can appear only within the <inbound>, <outbound>, <backend> section elements.\r\n    - To apply a policy to the incoming request (before it is forwarded to the backend service), place a corresponding policy element within the <inbound> section element.\r\n    - To apply a policy to the outgoing response (before it is sent back to the caller), place a corresponding policy element within the <outbound> section element.\r\n    - To add a policy, place the cursor at the desired insertion point and select a policy from the sidebar.\r\n    - To remove a policy, delete the corresponding policy statement from the policy document.\r\n    - Position the <base> element within a section element to inherit all policies from the corresponding section element in the enclosing scope.\r\n    - Remove the <base> element to prevent inheriting policies from the corresponding section element in the enclosing scope.\r\n    - Policies are applied in the order of their appearance, from the top down.\r\n    - Comments within policy elements are not supported and may disappear. Place your comments between policy elements or at a higher level scope.\r\n-->\r\n<policies>\r\n  <inbound>\r\n    <base />\r\n    <!--Set request content to variable-->\r\n    <set-variable name=\"request-body\" value=\"@(context.Request.Body.As&lt;JObject&gt;(preserveContent:true))\" />\r\n    <!--Trace custom properties of request-->\r\n    <trace source=\"APIM\" severity=\"information\">\r\n      <message>@(String.Format(\"{0} | {1}\", context.Api.Name, context.Operation.Name))</message>\r\n      <metadata name=\"correlation-id\" value=\"@((string)context.Variables[&quot;correlation-id&quot;])\" />\r\n      <metadata name=\"Auth Id\" value=\"@(context.Variables.GetValueOrDefault&lt;JObject&gt;(&quot;request-body&quot;).ContainsKey(&quot;AUTHID&quot;) ? context.Variables.GetValueOrDefault&lt;JObject&gt;(&quot;request-body&quot;).Property(&quot;AUTHID&quot;).Value.ToString() : &quot;DefaultAuthId&quot; )\" />\r\n      <metadata name=\"Company Code\" value=\"@(context.Variables.GetValueOrDefault&lt;JObject&gt;(&quot;request-body&quot;).ContainsKey(&quot;companyCode&quot;) ? context.Variables.GetValueOrDefault&lt;JObject&gt;(&quot;request-body&quot;).Property(&quot;companyCode&quot;).Value.ToString() : &quot;DefaultCompanyCode&quot; )\" />\r\n    </trace>\r\n    <!-- <set-variable name=\"isAuthOk\" value=\"@(context.Request.Headers.ContainsKey(\"Authorization\") \r\n            && context.Request.Headers[\"Authorization\"].Contains(\"Basic \" + Convert.ToBase64String(\r\n                  Encoding.UTF8.GetBytes(\"abcd:1234!\"))))\" />\r\n        <choose>\r\n            <when condition=\"@(context.Variables.GetValueOrDefault<bool>(\"isAuthOk\"))\" />\r\n            <otherwise>\r\n                <return-response>\r\n                    <set-status code=\"401\" reason=\"Unauthorized\" />\r\n                    <set-header name=\"WWW-Authenticate\" exists-action=\"override\">\r\n                        <value>Basic realm=\"someRealm\"</value>\r\n                    </set-header>\r\n                    <set-body>Wrong username or password</set-body>\r\n                </return-response>\r\n            </otherwise>\r\n        </choose>-->\r\n    <set-variable name=\"SASKey\" value=\"@{&#xA;                        string resourceUri = &quot;{{ServiceUpdateResourceUri}}&quot;;&#xA;                        string keyName = &quot;{{ServiceUpdateKeyName}}&quot;;&#xA;                        string key = &quot;{{ServiceUpdateKey}}&quot;;&#xA;                        TimeSpan sinceEpoch = DateTime.UtcNow - new DateTime(1970, 1, 1);&#xA;                        var expiry = Convert.ToString((int)sinceEpoch.TotalSeconds + 120);&#xA;                        string stringToSign = System.Uri.EscapeDataString(resourceUri) + &quot;\\n&quot; + expiry;&#xA;                        HMACSHA256 hmac = new HMACSHA256(Encoding.UTF8.GetBytes(key));&#xA;                        var signature = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(stringToSign)));&#xA;                        var sasToken = String.Format(&quot;SharedAccessSignature sr={0}&amp;amp;sig={1}&amp;amp;se={2}&amp;amp;skn={3}&quot;, &#xA;                                        System.Uri.EscapeDataString(resourceUri),&#xA;                                        System.Uri.EscapeDataString(signature), expiry, keyName);&#xA;                        return sasToken;&#xA;                    }\" />\r\n    <cache-lookup-value key=\"serviceUpdateSbSAS\" variable-name=\"cachedSasToken\" />\r\n    <choose>\r\n      <when condition=\"@(context.Variables.GetValueOrDefault&lt;string&gt;(&quot;cachedSasToken&quot;) == null)\">\r\n        <cache-store-value key=\"serviceUpdateSbSAS\" value=\"@{&#xA;                        string resourceUri = &quot;{{ServiceUpdateResourceUri}}&quot;;&#xA;                        string keyName = &quot;{{ServiceUpdateKeyName}}&quot;;&#xA;                        string key = &quot;{{ServiceUpdateKey}}&quot;;&#xA;                        TimeSpan sinceEpoch = DateTime.UtcNow - new DateTime(1970, 1, 1);&#xA;                        var expiry = Convert.ToString((int)sinceEpoch.TotalSeconds + 120);&#xA;                        string stringToSign = System.Uri.EscapeDataString(resourceUri) + &quot;\\n&quot; + expiry;&#xA;                        HMACSHA256 hmac = new HMACSHA256(Encoding.UTF8.GetBytes(key));&#xA;                        var signature = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(stringToSign)));&#xA;                        var sasToken = String.Format(&quot;SharedAccessSignature sr={0}&amp;amp;sig={1}&amp;amp;se={2}&amp;amp;skn={3}&quot;, &#xA;                                        System.Uri.EscapeDataString(resourceUri),&#xA;                                        System.Uri.EscapeDataString(signature), expiry, keyName);&#xA;                        return sasToken;&#xA;                    }\" duration=\"10\" />\r\n        <cache-lookup-value key=\"serviceUpdateSbSAS\" variable-name=\"cachedSasToken\" />\r\n      </when>\r\n    </choose>\r\n    <set-header name=\"MessageId\" exists-action=\"skip\">\r\n      <value>@{\r\n                        var body = context.Variables.GetValueOrDefault&lt;JObject&gt;(\"request-body\");\r\n                        if(body.Property(\"messageId\")==null)\r\n                        {\r\n                        return Guid.NewGuid().ToString();\r\n                        }\r\n                        else\r\n                        {\r\n                        return body.Property(\"messageId\").Value.ToString();\r\n                        }\r\n                    }</value>\r\n    </set-header>\r\n    <set-header name=\"Authorization\" exists-action=\"override\">\r\n      <value>@(context.Variables.GetValueOrDefault&lt;string&gt;(\"SASKey\"))</value>\r\n    </set-header>\r\n    <set-header name=\"MessageAction\" exists-action=\"skip\">\r\n      <value>Undefined</value>\r\n    </set-header>\r\n    <set-header name=\"MessageType\" exists-action=\"override\">\r\n      <value>@(context.Request.Headers.GetValueOrDefault(\"MessageType\", \"initialrequest\"))</value>\r\n    </set-header>\r\n    <set-header name=\"BrokerProperties\" exists-action=\"override\">\r\n      <value>@{\r\n                     var json = new JObject();\r\n                     json.Add(\"CorrelationId\", (string)context.Variables[\"correlation-id\"]);\r\n                     return json.ToString(Newtonsoft.Json.Formatting.None);                    \r\n                    }</value>\r\n    </set-header>\r\n  </inbound>\r\n  <backend>\r\n    <forward-request timeout=\"500\" />\r\n  </backend>\r\n  <outbound>\r\n    <base />\r\n  </outbound>\r\n  <on-error>\r\n    <choose>\r\n      <when condition=\"@(context.Response.StatusCode!=401)\" />\r\n      <otherwise>\r\n        <return-response>\r\n          <set-status code=\"@(context.Response.StatusCode)\" reason=\"@(context.LastError.Reason)\" />\r\n          <set-body>@(context.LastError.Message)</set-body>\r\n        </return-response>\r\n      </otherwise>\r\n    </choose>\r\n    <trace source=\"APIM policy\" severity=\"error\">\r\n      <message>@(String.Format(\"{0} | {1} | Error trace from APIM\", context.Api.Name, context.Operation.Name))</message>\r\n      <metadata name=\"correlation-id\" value=\"@((string)context.Variables[&quot;correlation-id&quot;])\" />\r\n      <metadata name=\"Error message\" value=\"@(context.LastError.Message)\" />\r\n      <metadata name=\"Status code\" value=\"@(context.Response.StatusCode.ToString())\" />\r\n    </trace>\r\n    <set-header name=\"ErrorSource\" exists-action=\"override\">\r\n      <value>@(context.LastError.Source)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorReason\" exists-action=\"override\">\r\n      <value>@(context.LastError.Reason)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorMessage\" exists-action=\"override\">\r\n      <value>@(context.LastError.Message)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorScope\" exists-action=\"override\">\r\n      <value>@(context.LastError.Scope)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorSection\" exists-action=\"override\">\r\n      <value>@(context.LastError.Section)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorPath\" exists-action=\"override\">\r\n      <value>@(context.LastError.Path)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorPolicyId\" exists-action=\"override\">\r\n      <value>@(context.LastError.PolicyId)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorStatusCode\" exists-action=\"override\">\r\n      <value>@(context.Response.StatusCode.ToString())</value>\r\n    </set-header>\r\n  </on-error>\r\n</policies>",
+                "format": "xml"
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis/policies",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/transferauthorization/policy')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/apis', variables('apim_name'), 'transferauthorization')]",
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "value": "<!--\r\n    IMPORTANT:\r\n    - Policy elements can appear only within the <inbound>, <outbound>, <backend> section elements.\r\n    - To apply a policy to the incoming request (before it is forwarded to the backend service), place a corresponding policy element within the <inbound> section element.\r\n    - To apply a policy to the outgoing response (before it is sent back to the caller), place a corresponding policy element within the <outbound> section element.\r\n    - To add a policy, place the cursor at the desired insertion point and select a policy from the sidebar.\r\n    - To remove a policy, delete the corresponding policy statement from the policy document.\r\n    - Position the <base> element within a section element to inherit all policies from the corresponding section element in the enclosing scope.\r\n    - Remove the <base> element to prevent inheriting policies from the corresponding section element in the enclosing scope.\r\n    - Policies are applied in the order of their appearance, from the top down.\r\n    - Comments within policy elements are not supported and may disappear. Place your comments between policy elements or at a higher level scope.\r\n-->\r\n<policies>\r\n  <inbound>\r\n    <base />\r\n  </inbound>\r\n  <backend>\r\n    <forward-request timeout=\"500\" />\r\n  </backend>\r\n  <outbound>\r\n    <base />\r\n  </outbound>\r\n  <on-error>\r\n    <choose>\r\n      <when condition=\"@(context.Response.StatusCode!=401)\" />\r\n      <otherwise>\r\n        <return-response>\r\n          <set-status code=\"@(context.Response.StatusCode)\" reason=\"@(context.LastError.Reason)\" />\r\n          <set-body>@(context.LastError.Message)</set-body>\r\n        </return-response>\r\n      </otherwise>\r\n    </choose>\r\n    <trace source=\"APIM policy\" severity=\"error\">\r\n      <message>@(String.Format(\"{0} | {1} | Error trace from APIM\", context.Api.Name, context.Operation.Name))</message>\r\n      <metadata name=\"correlation-id\" value=\"@((string)context.Variables[&quot;correlation-id&quot;])\" />\r\n      <metadata name=\"Error message\" value=\"@(context.LastError.Message)\" />\r\n      <metadata name=\"Status code\" value=\"@(context.Response.StatusCode.ToString())\" />\r\n    </trace>\r\n    <set-header name=\"ErrorSource\" exists-action=\"override\">\r\n      <value>@(context.LastError.Source)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorReason\" exists-action=\"override\">\r\n      <value>@(context.LastError.Reason)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorMessage\" exists-action=\"override\">\r\n      <value>@(context.LastError.Message)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorScope\" exists-action=\"override\">\r\n      <value>@(context.LastError.Scope)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorSection\" exists-action=\"override\">\r\n      <value>@(context.LastError.Section)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorPath\" exists-action=\"override\">\r\n      <value>@(context.LastError.Path)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorPolicyId\" exists-action=\"override\">\r\n      <value>@(context.LastError.PolicyId)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorStatusCode\" exists-action=\"override\">\r\n      <value>@(context.Response.StatusCode.ToString())</value>\r\n    </set-header>\r\n  </on-error>\r\n</policies>",
+                "format": "xml"
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/apis/policies",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(variables('apim_name'), '/transferauthorizationfiles/policy')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/apis', variables('apim_name'), 'transferauthorizationfiles')]",
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "value": "<!--\r\n    IMPORTANT:\r\n    - Policy elements can appear only within the <inbound>, <outbound>, <backend> section elements.\r\n    - To apply a policy to the incoming request (before it is forwarded to the backend service), place a corresponding policy element within the <inbound> section element.\r\n    - To apply a policy to the outgoing response (before it is sent back to the caller), place a corresponding policy element within the <outbound> section element.\r\n    - To add a policy, place the cursor at the desired insertion point and select a policy from the sidebar.\r\n    - To remove a policy, delete the corresponding policy statement from the policy document.\r\n    - Position the <base> element within a section element to inherit all policies from the corresponding section element in the enclosing scope.\r\n    - Remove the <base> element to prevent inheriting policies from the corresponding section element in the enclosing scope.\r\n    - Policies are applied in the order of their appearance, from the top down.\r\n    - Comments within policy elements are not supported and may disappear. Place your comments between policy elements or at a higher level scope.\r\n-->\r\n<policies>\r\n  <inbound>\r\n    <base />\r\n    <set-variable name=\"file_correlation_id\" value=\"         @((string)context.Request.Headers.GetValueOrDefault(&quot;TransferAuth_RequestId&quot;,Guid.NewGuid().ToString()))         \" />\r\n    <!--Set headers for end-to-end correlation-->\r\n    <set-header name=\"x-correlation-id\" exists-action=\"override\">\r\n      <value>@((string)context.Variables[\"file_correlation_id\"])</value>\r\n    </set-header>\r\n    <set-header name=\"correlation-id\" exists-action=\"override\">\r\n      <value>@((string)context.Variables[\"file_correlation_id\"])</value>\r\n    </set-header>\r\n    <set-header name=\"x-ms-client-tracking-id\" exists-action=\"override\">\r\n      <value>@((string)context.Variables[\"file_correlation_id\"])</value>\r\n    </set-header>\r\n    <set-header name=\"TransferAuth_RequestId\" exists-action=\"skip\">\r\n      <value>@((string)context.Request.Headers.GetValueOrDefault(\"TransferAuth_RequestId\",\"\"))</value>\r\n    </set-header>\r\n    <set-header name=\"CompanyCode\" exists-action=\"skip\">\r\n      <value>@((string)context.Request.Headers.GetValueOrDefault(\"CompanyCode\",\"\"))</value>\r\n    </set-header>\r\n    <set-header name=\"AuthId\" exists-action=\"skip\">\r\n      <value>@((string)context.Request.Headers.GetValueOrDefault(\"AuthId\",\"\"))</value>\r\n    </set-header>\r\n    <set-header name=\"Ocp-Apim-Subscription-Key\" exists-action=\"skip\">\r\n      <value>@((string)context.Request.Headers.GetValueOrDefault(\"Ocp-Apim-Subscription-Key\",\"\"))</value>\r\n    </set-header>\r\n    <set-header name=\"EmployeeId\" exists-action=\"skip\">\r\n      <value>@((string)context.Request.Headers.GetValueOrDefault(\"EmployeeId\",\"\"))</value>\r\n    </set-header>\r\n    <!-- Upload file to blob -->\r\n    <!--  <set-variable name=\"fileType\" value=\"@{\r\n            var fileType = \"\";\r\n            var filenameWithExtension = (string)context.Request.Headers.GetValueOrDefault(\"FileNameWithExtension\",\"\");\r\n            if(filenameWithExtension != \"\")\r\n            {\r\n                var extension = filenameWithExtension.Split('.')[1]; \r\n                if(extension == \"pdf\"){ fileType = \"application/pdf\"; }\r\n                else if(extension == \"jpg\"){ fileType = \"image/jpg\"; }\r\n                else if(extension == \"jpeg\"){ fileType = \"image/jpeg\"; }\r\n                else if(extension == \"txt\"){ fileType = \"text/plain\"; }\r\n                else if(extension == \"png\"){ fileType = \"image/png\"; }\r\n                else {fileType = \"\";}\r\n            }\r\n            return fileType;\r\n            }\" />\r\n        <choose>-->\r\n    <!--If file name is missing or invalid file type exist, return bad request -->\r\n    <!--  <when condition=\"@(context.Variables.GetValueOrDefault<string>(\"fileType\") == \"\")\">\r\n                <return-response>\r\n                    <set-status code=\"400\" reason=\"BadRequest\" />\r\n                    <set-body>Please add a valid file name with valid type. Supported types: PDF,JPG/JPEG,TXT,PNG</set-body>\r\n                </return-response>\r\n            </when>-->\r\n    <!--   <otherwise>\r\n                <set-variable name=\"blobUrl\" value=\"@{ return \"https://{{StorageAccountName}}.blob.core.windows.net/{{TransferAuthFileContainer}}/\" + (string)context.Request.Headers.GetValueOrDefault(\"FileNameWithExtension\",\"\"); }\" />-->\r\n    <!-- First get the auth token with managed-identity from the storage account and save it on a output token -->\r\n    <!--   <authentication-managed-identity resource=\"https://storage.azure.com/\" output-token-variable-name=\"msi-access-token\" ignore-error=\"false\" />-->\r\n    <!-- Send the PUT request with metadata -->\r\n    <!--   <send-request mode=\"new\" response-variable-name=\"result\" timeout=\"300\" ignore-error=\"false\">\r\n                    <set-url>@((string)context.Variables[\"blobUrl\"])</set-url>\r\n                    <set-method>PUT</set-method>\r\n                    <set-header name=\"Host\" exists-action=\"override\">\r\n                        <value>{{StorageAccountName}}.blob.core.windows.net</value>\r\n                    </set-header>\r\n                    <set-header name=\"x-ms-blob-Type\" exists-action=\"override\">\r\n                        <value>BlockBlob</value>\r\n                    </set-header>\r\n                    <set-header name=\"X-Ms-Blob-Content-Disposition\" exists-action=\"override\">\r\n                        <value>multipart/form-data</value>\r\n                    </set-header>\r\n                    <set-header name=\"x-ms-blob-content-type\" exists-action=\"override\">\r\n                        <value>@((string)context.Variables.GetValueOrDefault(\"fileType\",\"\"))</value>\r\n                    </set-header>\r\n                    <set-header name=\"Accept\" exists-action=\"override\">\r\n                        <value>application/json</value>\r\n                    </set-header>\r\n                    <set-header name=\"x-ms-client-request-id\" exists-action=\"override\">\r\n                        <value>@{ return Guid.NewGuid().ToString(); }</value>\r\n                    </set-header>\r\n                    <set-header name=\"x-ms-version\" exists-action=\"override\">\r\n                        <value>2019-12-12</value>\r\n                    </set-header> -->\r\n    <!-- Set the header with authorization bearer token that was previously requested -->\r\n    <!--   <set-header name=\"Authorization\" exists-action=\"override\">\r\n                        <value>@(\"Bearer \" + (string)context.Variables[\"msi-access-token\"])</value>\r\n                    </set-header>-->\r\n    <!-- Set the file content from the original request body data -->\r\n    <!--   <set-body>@(context.Request.Body.As<byte[]>())</set-body>\r\n                </send-request>\r\n                <choose>\r\n                    <when condition=\"@(((IResponse)context.Variables[\"result\"]).StatusCode != 201)\">\r\n                        <return-response>\r\n                            <set-status code=\"500\" reason=\"Server Error\" />\r\n                            <set-body>An error occured while uploading file. Please try again later.</set-body>\r\n                        </return-response>\r\n                    </when>\r\n                    <otherwise>-->\r\n    <!--Set uploaded blob URL as request body and forward request-->\r\n    <!-- <set-variable name=\"SASKey\" value=\"@{\r\n                        string resourceUri = \"{{TransferAuthorizationResourceUri}}\";\r\n                        string keyName = \"{{TransferAuthorizationKeyName}}\";\r\n                        string key = \"{{TransferAuthorizationKey}}\";\r\n                        TimeSpan sinceEpoch = DateTime.UtcNow - new DateTime(1970, 1, 1);\r\n                        var expiry = Convert.ToString((int)sinceEpoch.TotalSeconds + 120);\r\n                        string stringToSign = System.Uri.EscapeDataString(resourceUri) + \"\\n\" + expiry;\r\n                        HMACSHA256 hmac = new HMACSHA256(Encoding.UTF8.GetBytes(key));\r\n                        var signature = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(stringToSign)));\r\n                        var sasToken = String.Format(\"SharedAccessSignature sr={0}&amp;sig={1}&amp;se={2}&amp;skn={3}\", \r\n                                        System.Uri.EscapeDataString(resourceUri),\r\n                                        System.Uri.EscapeDataString(signature), expiry, keyName);\r\n                        return sasToken;\r\n                    }\" />\r\n                        <set-header name=\"Authorization\" exists-action=\"override\">\r\n                            <value>@(context.Variables.GetValueOrDefault<string>(\"SASKey\"))</value>\r\n                        </set-header>\r\n                        <set-header name=\"MessageType\" exists-action=\"override\">\r\n                            <value>RequestFiles</value>\r\n                        </set-header>\r\n                        <set-body>@{\r\n                        var json = new JObject();\r\n                        json.Add(\"TransfereeId\",(string)context.Request.Headers.GetValueOrDefault(\"TransferAuth_RequestId\",\"\"));\r\n                        var jsonArray = new JArray();\r\n                        var file = new JObject();\r\n                        file.Add(\"BlobUrl\", (string)context.Variables[\"blobUrl\"]);\r\n                        jsonArray.Add(file);\r\n                     json.Add(\"TransferFiles\", jsonArray);\r\n                     return json.ToString(Newtonsoft.Json.Formatting.None); \r\n                    }</set-body>\r\n                    </otherwise>\r\n                </choose>\r\n            </otherwise>\r\n        </choose>-->\r\n  </inbound>\r\n  <backend>\r\n    <forward-request timeout=\"500\" />\r\n  </backend>\r\n  <outbound>\r\n    <base />\r\n  </outbound>\r\n  <on-error>\r\n    <base />\r\n  </on-error>\r\n</policies>",
+                "format": "xml"
+            }
+        },
+        {
+    "type": "Microsoft.ApiManagement/service/apis/operations/policies",
+    "apiVersion": "2020-12-01",
+    "name": "[concat(variables('apim_name'), '/testapi/testpostmethod/policy')]",
+    "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/apis/operations', variables('apim_name'), 'testapi', 'testpostmethod')]",
+        "[resourceId('Microsoft.ApiManagement/service/apis', variables('apim_name'), 'testapi')]",
+        "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+    ],
+    "properties": {
+        "value": "<!--\r\n    IMPORTANT:\r\n    - Policy elements can appear only within the <inbound>, <outbound>, <backend> section elements.\r\n    - To apply a policy to the incoming request (before it is forwarded to the backend service), place a corresponding policy element within the <inbound> section element.\r\n    - To apply a policy to the outgoing response (before it is sent back to the caller), place a corresponding policy element within the <outbound> section element.\r\n    - To add a policy, place the cursor at the desired insertion point and select a policy from the sidebar.\r\n    - To remove a policy, delete the corresponding policy statement from the policy document.\r\n    - Position the <base> element within a section element to inherit all policies from the corresponding section element in the enclosing scope.\r\n    - Remove the <base> element to prevent inheriting policies from the corresponding section element in the enclosing scope.\r\n    - Policies are applied in the order of their appearance, from the top down.\r\n    - Comments within policy elements are not supported and may disappear. Place your comments between policy elements or at a higher level scope.\r\n-->\r\n<policies>\r\n  <inbound>\r\n    <base />\r\n    <mock-response status-code=\"200\" content-type=\"application/json\" />\r\n  </inbound>\r\n  <backend>\r\n    <base />\r\n  </backend>\r\n  <outbound>\r\n    <base />\r\n  </outbound>\r\n  <on-error>\r\n    <base />\r\n  </on-error>\r\n</policies>",
+        "format": "xml"
+           }
+        },
+        {
+    "type": "Microsoft.ApiManagement/service/apis/operations/policies",
+    "apiVersion": "2020-12-01",
+    "name": "[concat(variables('apim_name'), '/transferauthorization/postapi/policy')]",
+    "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/apis/operations', variables('apim_name'), 'transferauthorization', 'postapi')]",
+        "[resourceId('Microsoft.ApiManagement/service/apis', variables('apim_name'), 'transferauthorization')]",
+        "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+    ],
+    "properties": {
+        "value": "<!--\r\n    IMPORTANT:\r\n    - Policy elements can appear only within the <inbound>, <outbound>, <backend> section elements.\r\n    - To apply a policy to the incoming request (before it is forwarded to the backend service), place a corresponding policy element within the <inbound> section element.\r\n    - To apply a policy to the outgoing response (before it is sent back to the caller), place a corresponding policy element within the <outbound> section element.\r\n    - To add a policy, place the cursor at the desired insertion point and select a policy from the sidebar.\r\n    - To remove a policy, delete the corresponding policy statement from the policy document.\r\n    - Position the <base> element within a section element to inherit all policies from the corresponding section element in the enclosing scope.\r\n    - Remove the <base> element to prevent inheriting policies from the corresponding section element in the enclosing scope.\r\n    - Policies are applied in the order of their appearance, from the top down.\r\n    - Comments within policy elements are not supported and may disappear. Place your comments between policy elements or at a higher level scope.\r\n-->\r\n<policies>\r\n  <inbound>\r\n    <base />\r\n    <set-backend-service base-url=\"{{UpdateValidatorWorkflowURL}}\" />\r\n    <set-variable name=\"transferauth_correlation_id\" value=\"@((string)context.Request.Headers.GetValueOrDefault(&quot;x-correlation-id&quot;,Guid.NewGuid().ToString()))\" />\r\n    <!--Set headers for end-to-end correlation-->\r\n    <set-header name=\"x-correlation-id\" exists-action=\"override\">\r\n      <value>@((string)context.Variables[\"transferauth_correlation_id\"])</value>\r\n    </set-header>\r\n    <set-header name=\"correlation-id\" exists-action=\"override\">\r\n      <value>@((string)context.Variables[\"transferauth_correlation_id\"])</value>\r\n    </set-header>\r\n    <set-header name=\"x-ms-client-tracking-id\" exists-action=\"override\">\r\n      <value>@((string)context.Variables[\"transferauth_correlation_id\"])</value>\r\n    </set-header>\r\n  </inbound>\r\n  <backend>\r\n    <forward-request timeout=\"500\" />\r\n  </backend>\r\n  <outbound>\r\n    <base />\r\n  </outbound>\r\n  <on-error>\r\n    <base />\r\n  </on-error>\r\n</policies>",
+        "format": "xml"
+            }
+        },
+
+     {
+    "type": "Microsoft.ApiManagement/service/apis/operations/policies",
+    "apiVersion": "2020-12-01",
+    "name": "[concat(variables('apim_name'), '/transferauthorization/patchapi/policy')]",
+    "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/apis/operations', variables('apim_name'), 'transferauthorization', 'patchapi')]",
+        "[resourceId('Microsoft.ApiManagement/service/apis', variables('apim_name'), 'transferauthorization')]",
+        "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+    ],
+    "properties": {
+        "value": "<!--\r\n    IMPORTANT:\r\n    - Policy elements can appear only within the <inbound>, <outbound>, <backend> section elements.\r\n    - To apply a policy to the incoming request (before it is forwarded to the backend service), place a corresponding policy element within the <inbound> section element.\r\n    - To apply a policy to the outgoing response (before it is sent back to the caller), place a corresponding policy element within the <outbound> section element.\r\n    - To add a policy, place the cursor at the desired insertion point and select a policy from the sidebar.\r\n    - To remove a policy, delete the corresponding policy statement from the policy document.\r\n    - Position the <base> element within a section element to inherit all policies from the corresponding section element in the enclosing scope.\r\n    - Remove the <base> element to prevent inheriting policies from the corresponding section element in the enclosing scope.\r\n    - Policies are applied in the order of their appearance, from the top down.\r\n    - Comments within policy elements are not supported and may disappear. Place your comments between policy elements or at a higher level scope.\r\n-->\r\n<policies>\r\n  <inbound>\r\n    <base />\r\n    <!--Set request content to variable-->\r\n    <set-variable name=\"request-body\" value=\"@(context.Request.Body.As&lt;JObject&gt;(preserveContent:true))\" />\r\n    <!--<set-variable name=\"ReqGUID\" value=\"@(Guid.NewGuid().ToString())\" />-->\r\n    <!--Trace custom properties of request-->\r\n    <trace source=\"APIM\" severity=\"information\">\r\n      <message>@(String.Format(\"{0} | {1}\", context.Api.Name, context.Operation.Name))</message>\r\n      <metadata name=\"correlation-id\" value=\"@((string)context.Variables[&quot;correlation-id&quot;])\" />\r\n      <metadata name=\"Auth Id\" value=\"@(context.Variables.GetValueOrDefault&lt;JObject&gt;(&quot;request-body&quot;).ContainsKey(&quot;AUTHID&quot;) ? context.Variables.GetValueOrDefault&lt;JObject&gt;(&quot;request-body&quot;).Property(&quot;AUTHID&quot;).Value.ToString() : &quot;DefaultAuthId&quot; )\" />\r\n      <metadata name=\"Company Code\" value=\"@(context.Variables.GetValueOrDefault&lt;JObject&gt;(&quot;request-body&quot;).ContainsKey(&quot;companyCode&quot;) ? context.Variables.GetValueOrDefault&lt;JObject&gt;(&quot;request-body&quot;).Property(&quot;companyCode&quot;).Value.ToString() : &quot;DefaultCompanyCode&quot; )\" />\r\n    </trace>\r\n    <!-- <set-variable name=\"isAuthOk\" value=\"@(context.Request.Headers.ContainsKey(\"Authorization\") \r\n            && context.Request.Headers[\"Authorization\"].Contains(\"Basic \" + Convert.ToBase64String(\r\n                  Encoding.UTF8.GetBytes(\"abcd:1234!\"))))\" />\r\n        <choose>\r\n            <when condition=\"@(context.Variables.GetValueOrDefault<bool>(\"isAuthOk\"))\" />\r\n            <otherwise>\r\n                <return-response>\r\n                    <set-status code=\"401\" reason=\"Unauthorized\" />\r\n                    <set-header name=\"WWW-Authenticate\" exists-action=\"override\">\r\n                        <value>Basic realm=\"someRealm\"</value>\r\n                    </set-header>\r\n                    <set-body>Wrong username or password</set-body>\r\n                </return-response>\r\n            </otherwise>\r\n        </choose>-->\r\n    <!-- Upload file to blob -->\r\n    <set-variable name=\"blobUrl\" value=\"@{ return &quot;https://{{StorageAccountName}}.blob.core.windows.net/{{TransferAuthPayLoadContainer}}/&quot; + (string)context.Variables[&quot;correlation-id&quot;]+&quot;.json&quot;; }\" />\r\n    <!-- First get the auth token with managed-identity from the storage account and save it on a output token -->\r\n    <authentication-managed-identity resource=\"https://storage.azure.com/\" output-token-variable-name=\"msi-access-token\" ignore-error=\"false\" />\r\n    <!-- Send the PUT request with metadata -->\r\n    <send-request mode=\"new\" response-variable-name=\"result\" timeout=\"300\" ignore-error=\"false\">\r\n      <set-url>@((string)context.Variables[\"blobUrl\"])</set-url>\r\n      <set-method>PUT</set-method>\r\n      <set-header name=\"Host\" exists-action=\"override\">\r\n        <value>{{StorageAccountName}}.blob.core.windows.net</value>\r\n      </set-header>\r\n      <set-header name=\"x-ms-blob-Type\" exists-action=\"override\">\r\n        <value>BlockBlob</value>\r\n      </set-header>\r\n      <!--  <set-header name=\"X-Ms-Blob-Content-Disposition\" exists-action=\"override\">\r\n                        <value>multipart/form-data</value>\r\n                    </set-header> -->\r\n      <set-header name=\"x-ms-blob-content-type\" exists-action=\"override\">\r\n        <value>text/plain</value>\r\n      </set-header>\r\n      <set-header name=\"Accept\" exists-action=\"override\">\r\n        <value>application/json</value>\r\n      </set-header>\r\n      <set-header name=\"Content-Type\" exists-action=\"override\">\r\n        <value>application/json</value>\r\n      </set-header>\r\n      <set-header name=\"x-ms-client-request-id\" exists-action=\"override\">\r\n        <value>@{ return Guid.NewGuid().ToString(); }</value>\r\n      </set-header>\r\n      <set-header name=\"x-ms-version\" exists-action=\"override\">\r\n        <value>2019-12-12</value>\r\n      </set-header>\r\n      <!-- Set the header with authorization bearer token that was previously requested -->\r\n      <set-header name=\"Authorization\" exists-action=\"override\">\r\n        <value>@(\"Bearer \" + (string)context.Variables[\"msi-access-token\"])</value>\r\n      </set-header>\r\n      <!-- Set the file content from the original request body data -->\r\n      <set-body>@(context.Request.Body.As&lt;byte[]&gt;())</set-body>\r\n    </send-request>\r\n    <choose>\r\n      <when condition=\"@(((IResponse)context.Variables[&quot;result&quot;]).StatusCode != 201)\">\r\n        <return-response>\r\n          <set-status code=\"500\" reason=\"Server Error\" />\r\n          <set-body>An error occured while uploading file. Please try again later.</set-body>\r\n        </return-response>\r\n      </when>\r\n      <otherwise>\r\n        <!--Set uploaded blob URL as request body and forward request-->\r\n        <set-variable name=\"SASKey\" value=\"@{&#xA;                        string resourceUri = &quot;{{TransferAuthorizationResourceUri}}&quot;;&#xA;                        string keyName = &quot;{{TransferAuthorizationKeyName}}&quot;;&#xA;                        string key = &quot;{{TransferAuthorizationKey}}&quot;;&#xA;                        TimeSpan sinceEpoch = DateTime.UtcNow - new DateTime(1970, 1, 1);&#xA;                        var expiry = Convert.ToString((int)sinceEpoch.TotalSeconds + 120);&#xA;                        string stringToSign = System.Uri.EscapeDataString(resourceUri) + &quot;\\n&quot; + expiry;&#xA;                        HMACSHA256 hmac = new HMACSHA256(Encoding.UTF8.GetBytes(key));&#xA;                        var signature = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(stringToSign)));&#xA;                        var sasToken = String.Format(&quot;SharedAccessSignature sr={0}&amp;amp;sig={1}&amp;amp;se={2}&amp;amp;skn={3}&quot;, &#xA;                                        System.Uri.EscapeDataString(resourceUri),&#xA;                                        System.Uri.EscapeDataString(signature), expiry, keyName);&#xA;                        return sasToken;&#xA;                    }\" />\r\n        <cache-lookup-value key=\"transferAuthSbSAS\" variable-name=\"cachedSasToken\" />\r\n        <choose>\r\n          <when condition=\"@(context.Variables.GetValueOrDefault&lt;string&gt;(&quot;cachedSasToken&quot;) == null)\">\r\n            <cache-store-value key=\"transferAuthSbSAS\" value=\"@{&#xA;                        string resourceUri = &quot;{{TransferAuthorizationResourceUri}}&quot;;&#xA;                        string keyName = &quot;{{TransferAuthorizationKeyName}}&quot;;&#xA;                        string key = &quot;{{TransferAuthorizationKey}}&quot;;&#xA;                        TimeSpan sinceEpoch = DateTime.UtcNow - new DateTime(1970, 1, 1);&#xA;                        var expiry = Convert.ToString((int)sinceEpoch.TotalSeconds + 120);&#xA;                        string stringToSign = System.Uri.EscapeDataString(resourceUri) + &quot;\\n&quot; + expiry;&#xA;                        HMACSHA256 hmac = new HMACSHA256(Encoding.UTF8.GetBytes(key));&#xA;                        var signature = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(stringToSign)));&#xA;                        var sasToken = String.Format(&quot;SharedAccessSignature sr={0}&amp;amp;sig={1}&amp;amp;se={2}&amp;amp;skn={3}&quot;, &#xA;                                        System.Uri.EscapeDataString(resourceUri),&#xA;                                        System.Uri.EscapeDataString(signature), expiry, keyName);&#xA;                        return sasToken;&#xA;                    }\" duration=\"10\" />\r\n            <cache-lookup-value key=\"transferAuthSbSAS\" variable-name=\"cachedSasToken\" />\r\n          </when>\r\n        </choose>\r\n        <set-header name=\"MessageId\" exists-action=\"skip\">\r\n          <value>@{\r\n                        var body = context.Variables.GetValueOrDefault&lt;JObject&gt;(\"request-body\");\r\n                        if(body.Property(\"messageId\")==null)\r\n                        {\r\n                        return Guid.NewGuid().ToString();\r\n                        }\r\n                        else\r\n                        {\r\n                        return body.Property(\"messageId\").Value.ToString();\r\n                        }\r\n                    }</value>\r\n        </set-header>\r\n        <set-header name=\"Authorization\" exists-action=\"override\">\r\n          <value>@(context.Variables.GetValueOrDefault&lt;string&gt;(\"SASKey\"))</value>\r\n        </set-header>\r\n        <set-header name=\"MessageType\" exists-action=\"override\">\r\n          <value>@(context.Request.Headers.GetValueOrDefault(\"MessageType\", \"InitialRequest\"))</value>\r\n        </set-header>\r\n        <set-header name=\"MessageAction\" exists-action=\"skip\">\r\n          <value>Undefined</value>\r\n        </set-header>\r\n        <set-header name=\"ReqGUID\" exists-action=\"skip\">\r\n          <value>@(context.Variables.GetValueOrDefault&lt;string&gt;(\"ReqGUID\"))</value>\r\n        </set-header>\r\n        <set-header name=\"BrokerProperties\" exists-action=\"override\">\r\n          <value>@{\r\n                     var json = new JObject();\r\n                     json.Add(\"CorrelationId\", (string)context.Variables[\"correlation-id\"]);\r\n                     return json.ToString(Newtonsoft.Json.Formatting.None);                    \r\n                    }</value>\r\n        </set-header>\r\n        <set-body>@{\r\n                        var json = new JObject();\r\n                        json.Add(\"BlobUrl\", (string)context.Variables[\"blobUrl\"]);\r\n                        \r\n                     return json.ToString(Newtonsoft.Json.Formatting.None); \r\n                    }</set-body>\r\n      </otherwise>\r\n    </choose>\r\n  </inbound>\r\n  <backend>\r\n    <forward-request timeout=\"500\" />\r\n  </backend>\r\n  <outbound>\r\n    <base />\r\n    <choose>\r\n      <when condition=\"@(context.Response.StatusCode == 201)\">\r\n        <set-body template=\"liquid\">\r\n              {\r\n                \"success\": true,\r\n                \"ReqGUID\": {{context.Variables[\"correlation-id\"]}}\r\n              }\r\n            </set-body>\r\n      </when>\r\n    </choose>\r\n  </outbound>\r\n  <on-error>\r\n    <choose>\r\n      <when condition=\"@(context.Response.StatusCode!=401)\" />\r\n      <otherwise>\r\n        <return-response>\r\n          <set-status code=\"@(context.Response.StatusCode)\" reason=\"@(context.LastError.Reason)\" />\r\n          <set-body>@(context.LastError.Message)</set-body>\r\n        </return-response>\r\n      </otherwise>\r\n    </choose>\r\n    <trace source=\"APIM error policy\" severity=\"error\">\r\n      <message>@(String.Format(\"{0} | {1} | Error trace from APIM\", context.Api.Name, context.Operation.Name))</message>\r\n      <metadata name=\"correlation-id\" value=\"@((string)context.Variables[&quot;correlation-id&quot;])\" />\r\n      <metadata name=\"Error message\" value=\"@(context.LastError.Message)\" />\r\n      <metadata name=\"Status code\" value=\"@(context.Response.StatusCode.ToString())\" />\r\n    </trace>\r\n    <set-header name=\"ErrorSource\" exists-action=\"override\">\r\n      <value>@(context.LastError.Source)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorReason\" exists-action=\"override\">\r\n      <value>@(context.LastError.Reason)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorMessage\" exists-action=\"override\">\r\n      <value>@(context.LastError.Message)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorScope\" exists-action=\"override\">\r\n      <value>@(context.LastError.Scope)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorSection\" exists-action=\"override\">\r\n      <value>@(context.LastError.Section)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorPath\" exists-action=\"override\">\r\n      <value>@(context.LastError.Path)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorPolicyId\" exists-action=\"override\">\r\n      <value>@(context.LastError.PolicyId)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorStatusCode\" exists-action=\"override\">\r\n      <value>@(context.Response.StatusCode.ToString())</value>\r\n    </set-header>\r\n  </on-error>\r\n</policies>",
+        "format": "xml"
+          }
+       },
+       {
+    "type": "Microsoft.ApiManagement/service/apis/operations/policies",
+    "apiVersion": "2020-12-01",
+    "name": "[concat(variables('apim_name'), '/servicelevelupdate/postserviceupdates/policy')]",
+    "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/apis/operations', variables('apim_name'), 'servicelevelupdate', 'postserviceupdates')]",
+        "[resourceId('Microsoft.ApiManagement/service/apis', variables('apim_name'), 'servicelevelupdate')]",
+        "[resourceId('Microsoft.ApiManagement/service',variables('apim_name'))]"
+    ],
+    "properties": {
+        "value": "<!--\r\n    IMPORTANT:\r\n    - Policy elements can appear only within the <inbound>, <outbound>, <backend> section elements.\r\n    - To apply a policy to the incoming request (before it is forwarded to the backend service), place a corresponding policy element within the <inbound> section element.\r\n    - To apply a policy to the outgoing response (before it is sent back to the caller), place a corresponding policy element within the <outbound> section element.\r\n    - To add a policy, place the cursor at the desired insertion point and select a policy from the sidebar.\r\n    - To remove a policy, delete the corresponding policy statement from the policy document.\r\n    - Position the <base> element within a section element to inherit all policies from the corresponding section element in the enclosing scope.\r\n    - Remove the <base> element to prevent inheriting policies from the corresponding section element in the enclosing scope.\r\n    - Policies are applied in the order of their appearance, from the top down.\r\n    - Comments within policy elements are not supported and may disappear. Place your comments between policy elements or at a higher level scope.\r\n-->\r\n<policies>\r\n  <inbound>\r\n    <base />\r\n  </inbound>\r\n  <backend>\r\n    <forward-request timeout=\"500\" />\r\n  </backend>\r\n  <outbound>\r\n    <base />\r\n  </outbound>\r\n  <on-error>\r\n    <choose>\r\n      <when condition=\"@(context.Response.StatusCode!=401)\" />\r\n      <otherwise>\r\n        <return-response>\r\n          <set-status code=\"@(context.Response.StatusCode)\" reason=\"@(context.LastError.Reason)\" />\r\n          <set-body>@(context.LastError.Message)</set-body>\r\n        </return-response>\r\n      </otherwise>\r\n    </choose>\r\n    <trace source=\"APIM error policy\" severity=\"error\">\r\n      <message>@(String.Format(\"{0} | {1} | Error trace from APIM\", context.Api.Name, context.Operation.Name))</message>\r\n      <metadata name=\"correlation-id\" value=\"@((string)context.Variables[&quot;correlation-id&quot;])\" />\r\n      <metadata name=\"Error message\" value=\"@(context.LastError.Message)\" />\r\n      <metadata name=\"Status code\" value=\"@(context.Response.StatusCode.ToString())\" />\r\n    </trace>\r\n    <set-header name=\"ErrorSource\" exists-action=\"override\">\r\n      <value>@(context.LastError.Source)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorReason\" exists-action=\"override\">\r\n      <value>@(context.LastError.Reason)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorMessage\" exists-action=\"override\">\r\n      <value>@(context.LastError.Message)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorScope\" exists-action=\"override\">\r\n      <value>@(context.LastError.Scope)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorSection\" exists-action=\"override\">\r\n      <value>@(context.LastError.Section)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorPath\" exists-action=\"override\">\r\n      <value>@(context.LastError.Path)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorPolicyId\" exists-action=\"override\">\r\n      <value>@(context.LastError.PolicyId)</value>\r\n    </set-header>\r\n    <set-header name=\"ErrorStatusCode\" exists-action=\"override\">\r\n      <value>@(context.Response.StatusCode.ToString())</value>\r\n    </set-header>\r\n  </on-error>\r\n</policies>",
+        "format": "xml"
+           }
+       },
+       {
+            "type": "Microsoft.ApiManagement/service/apis/operations/policies",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(variables('apim_name'), '/transferauthorizationfiles/file-upload/policy')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/apis/operations', variables('apim_name'), 'transferauthorizationfiles', 'file-upload')]",
+                "[resourceId('Microsoft.ApiManagement/service/apis', variables('apim_name'), 'transferauthorizationfiles')]",
+                "[resourceId('Microsoft.ApiManagement/service', variables('apim_name'))]"
+            ],
+            "properties": {
+                "value": "<!--\r\n    IMPORTANT:\r\n    - Policy elements can appear only within the <inbound>, <outbound>, <backend> section elements.\r\n    - To apply a policy to the incoming request (before it is forwarded to the backend service), place a corresponding policy element within the <inbound> section element.\r\n    - To apply a policy to the outgoing response (before it is sent back to the caller), place a corresponding policy element within the <outbound> section element.\r\n    - To add a policy, place the cursor at the desired insertion point and select a policy from the sidebar.\r\n    - To remove a policy, delete the corresponding policy statement from the policy document.\r\n    - Position the <base> element within a section element to inherit all policies from the corresponding section element in the enclosing scope.\r\n    - Remove the <base> element to prevent inheriting policies from the corresponding section element in the enclosing scope.\r\n    - Policies are applied in the order of their appearance, from the top down.\r\n    - Comments within policy elements are not supported and may disappear. Place your comments between policy elements or at a higher level scope.\r\n-->\r\n<policies>\r\n  <inbound>\r\n    <base />\r\n    <set-backend-service base-url=\"{{FileUploadWorkflowURL}}\" />\r\n  </inbound>\r\n  <backend>\r\n    <base />\r\n  </backend>\r\n  <outbound>\r\n    <base />\r\n  </outbound>\r\n  <on-error>\r\n    <base />\r\n  </on-error>\r\n</policies>",
+                "format": "xml"
+            }
+        }
+
+    ],
+    "outputs": {
+        "apim_name": {
+        "type": "string",
+        "value": "[variables('apim_name')]"
+       },
+    "transferauthorization_api_url": {
+        "type": "string",
+        "value": "[concat('https://',variables('apim_name'),'.azure-api.net','/',parameters('transferauthorization_API_path'),'/')]"
+       },
+    "transferauthorizationfiles_api_url": {
+        "type": "string",
+        "value": "[concat('https://',variables('apim_name'),'.azure-api.net','/',parameters('transferauthorizationfiles_API_path'),'/')]"
+        }
+    
+    
+    }
+
+}

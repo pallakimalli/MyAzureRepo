@@ -1,0 +1,82 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "storageaccount_name_prefix": {
+            "type": "String",
+             "metadata": {
+            "description": "Storage account name prefix used in the resource name"
+           }
+        },
+        /*Environment will override with pipeline variable*/
+         "environment": {
+            "type": "string",
+            "metadata": {
+            "description": "Name of the Environment to where we deploy the resource"
+           }
+        },
+         /*Location will override with pipeline variable*/
+         "location_prefix": {
+        "type": "string",
+        "metadata": {
+        "description": "Location prefix used in the resource name"
+           }
+        }
+    },
+    "variables": {
+        "storageaccount": "[concat(parameters('storageaccount_name_prefix'),parameters('environment'),parameters('location_prefix'),'001')]",
+        "location": "[resourceGroup().location]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2021-04-01",
+            "name": "[variables('storageaccount')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "StorageV2",
+            "properties": {
+                "allowCrossTenantReplication": true,
+                "minimumTlsVersion": "TLS1_2",
+                "allowBlobPublicAccess": true,
+                "allowSharedKeyAccess": true,
+                "networkAcls": {
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [],
+                    "ipRules": [],
+                    "defaultAction": "Allow"
+                },
+                "supportsHttpsTrafficOnly": true,
+                "encryption": {
+                    "services": {
+                        "file": {
+                            "keyType": "Account",
+                            "enabled": true
+                        },
+                        "blob": {
+                            "keyType": "Account",
+                            "enabled": true
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                },
+                "accessTier": "Hot"
+            },
+            "tags": {
+                "Environment": "[parameters('environment')]",
+                "Project": "Tech Innovation"
+            }
+        }
+           
+    ],
+    "outputs": {
+        "storageacc_name": {
+            "type": "string",
+            "value":"[variables('storageaccount')]"
+        },
+
+    }
+}

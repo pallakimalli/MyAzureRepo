@@ -1,0 +1,27 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "functionapp_name_prefix": {
+          "value": "func-orbitintegration" 
+    },
+       "environment": {
+        "value": "stg"
+    },
+       "location_prefix": {
+        "value": "cus"
+    },
+     
+       "storageaccountname": {
+        "value": "itwilloverride"
+    },
+    
+       "appinsightsname": {
+          "value": "itwilloverride"
+
+    },
+    "asp_name_prefix":{
+       "value": "asp-oi-funcapp"
+    }
+  }
+}

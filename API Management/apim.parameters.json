@@ -1,0 +1,49 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+       
+        "apim_name_prefix": {
+            "value": "apim-orbitintegration"
+        },
+        
+        "environment": {
+            "value": "stg"
+        },
+    
+        "location_prefix": {
+            "value": "cus"
+        },
+         "appinsights_name": {
+            "value": "willoverride"
+        },
+        "transferauth_topickeyname":{
+            "value": "willoverride"
+        },
+        "transferauth_topicsaskey":{
+            "value": "willoverride"
+        },
+        "transferauth_topicendpoint":{
+            "value": "willoverride"
+        },
+        "serviceUpdate_topickeyname":{
+            "value": "willoverride"
+        },
+        "serviceUpdate_topicsaskey":{
+            "value": "willoverride"
+        },
+        "serviceUpdate_topicendpoint":{
+            "value": "willoverride"
+        },
+        "storageaccount_name":{
+            "value": "willoverride"
+        },
+        "transferauthorization_API_path":{
+            "value": "api/transferauthorization"
+        },
+        "transferauthorizationfiles_API_path":{
+            "value": "api/transferauthorization/files"
+        }
+        
+    }
+}
