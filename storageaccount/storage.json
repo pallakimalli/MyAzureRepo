@@ -76,7 +76,7 @@
         "storageacc_name": {
             "type": "string",
             "value":"[variables('storageaccount')]"
-        },
+        }
 
     }
 }
