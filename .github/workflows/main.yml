@@ -10,8 +10,11 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     - uses: azure/arm-deploy@v1
+      id: deploy  
       with:
         resourceGroupName: TestRG
         template: storageaccount/storage.json
         parameters: storageaccount/storage.parameters.json
+        
+    - run: echo ${{ steps.deploy.outputs.storageacc_name }}    
         
