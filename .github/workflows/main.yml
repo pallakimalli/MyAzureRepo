@@ -12,6 +12,6 @@ jobs:
     - uses: azure/arm-deploy@v1
       with:
         resourceGroupName: TestRG
-        template: storage account/storage.json
-        parameters: storage account/storage.parameters.json
+        template: storageaccount/storage.json
+        parameters: storageaccount/storage.parameters.json
         
