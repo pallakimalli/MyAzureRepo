@@ -16,5 +16,11 @@ jobs:
         template: storageaccount/storage.json
         parameters: storageaccount/storage.parameters.json
         
-    - run: echo ${{ steps.deploy.outputs.storageacc_name }}    
+    - run: echo ${{ steps.deploy.outputs.storageacc_name }}
+    - name: get storage name
+      env: 
+       stg_name: ${{ steps.deploy.outputs.storageacc_name }}
+       
+    - name: print storage name
+    - run: echo "my storage account name is $stg_name"
         
