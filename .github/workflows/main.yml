@@ -1,0 +1,17 @@
+
+name: AzureARMSample
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - uses: azure/arm-deploy@v1
+      with:
+        resourceGroupName: TestRG
+        template: storage account/storage.json
+        parameters: storage account/storage.parameters.json
+        
