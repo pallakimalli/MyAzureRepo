@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "storageaccount_name_prefix": {
-            "value": "storbitint"
+            "value": "techinn"
         },
         "environment": {
             "value": "stg"
