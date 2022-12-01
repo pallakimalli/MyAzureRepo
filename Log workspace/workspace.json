@@ -1,0 +1,65 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace_name_prefix": {
+            "type": "String",
+             "metadata": {
+            "description": "Log workspace name prefix used in the resource name"
+            }
+        },
+    /*Location will override with pipeline output variable*/
+        "location_prefix": {
+            "type": "string",
+             "metadata": {
+            "description": "Location prefix used in the resource name"
+            }
+        },
+    /*Environment will override with pipeline output variable*/
+         "environment": {
+            "type": "string",
+            "metadata": {
+            "description": "Name of the Environment to where we deploy the resource"
+            }
+        },
+        "pricingTier": {
+            "type": "string",
+         "defaultvalue": "pergb2018"
+        }
+    },
+    "variables": {
+        "workspace_name": "[concat(parameters('workspace_name_prefix'), '-', parameters('environment'), '-', parameters('location_prefix'), '-', '001' )]",
+        "location": "[resourceGroup().location]"
+    },
+    "resources": [
+        {
+            "type": "microsoft.operationalinsights/workspaces",
+            "apiVersion": "2020-10-01",
+            "name": "[variables('workspace_name')]",
+            "location": "[variables('location')]",
+            "properties": {
+                
+                "sku": {
+                    "name": "[parameters('pricingTier')]"
+                },
+                "retentionInDays": 30,
+                "features": {
+                    "enableLogAccessUsingOnlyResourcePermissions": true
+                },
+                "workspaceCapping": {
+                    "dailyQuotaGb": -1
+                },
+                "publicNetworkAccessForIngestion": "Enabled",
+                "publicNetworkAccessForQuery": "Enabled"
+            }
+           
+        }
+        
+    ],
+    "outputs": {
+        "workspace-name": {
+        "type": "string",
+        "value": "[variables('workspace_name')]"
+        }
+    }
+}

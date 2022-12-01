@@ -2,21 +2,20 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-       
-        "apim_name_prefix": {
-            "value": "apim-mobile-app"
+        "workspace_name_prefix": {
+            "value": "log-orbitintegration"
         },
-        
-        "environment": {
+        "environment":{
             "value": "stg"
         },
-    
         "location_prefix": {
             "value": "cus"
         },
-         "appinsights_name": {
-            "value": "willoverride"
-        }   
-      
+        "pricingTier": {
+            "value": "pergb2018"
+           
+        }
+
+
     }
 }

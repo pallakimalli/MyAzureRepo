@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
       "functionapp_name_prefix": {
-          "value": "func-orbitintegration" 
+          "value": "func-mobileapp" 
     },
        "environment": {
         "value": "stg"
@@ -21,7 +21,7 @@
 
     },
     "asp_name_prefix":{
-       "value": "asp-oi-funcapp"
+       "value": "asp-funcapp"
     }
   }
 }

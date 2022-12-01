@@ -1,0 +1,64 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "appinsights_name_prefix": {
+            "type": "String",
+            "metadata": {
+            "description": "App Insights Nmae prefix used in the resource name"
+           }
+        },
+   /*Environment will override with pipeline variable*/
+         "environment": {
+            "type": "string",
+               "metadata": {
+            "description": "Name of the Environment to where we deploy the resource"
+        }
+    },
+    /*this will override with pipeline output variable*/
+         "logworkspacename": {
+            "type": "string",
+            "metadata": {
+            "description": "Name of the log Analytics Workspace"
+        }
+    },
+    /*location will override with pipeline variable*/
+         "location_prefix": {
+            "type": "string",
+            "metadata": {
+            "description": "Location prefix used in the resource name"
+        }
+    }
+
+    },
+    "variables": {
+        "appinsightsname":  "[concat(parameters('appinsights_name_prefix'), '-', parameters('environment'), '-', parameters('location_prefix'), '-', '001' )]",
+        "location": "[resourceGroup().location]"
+    },
+    "resources": [
+        {
+            "type": "microsoft.insights/components",
+            "apiVersion": "2020-02-02",
+            "name": "[variables('appinsightsname')]",
+            "location": "[variables('location')]",
+            "kind": "web",
+            "properties": {
+                "Application_Type": "web",
+                "Flow_Type": "bluefield",
+                "Request_Source": "rest",
+                "RetentionInDays": 90,
+                "WorkspaceResourceId": "[resourceId('microsoft.operationalinsights/workspaces', parameters('logworkspacename'))]",
+                "IngestionMode": "LogAnalytics",
+                "publicNetworkAccessForIngestion": "Enabled",
+                "publicNetworkAccessForQuery": "Enabled"
+            }
+        }
+        
+    ],
+    "outputs": {
+        "appinsightsname": {
+            "type": "string",
+            "value":"[variables('appinsightsname')]"
+        }
+    }
+}

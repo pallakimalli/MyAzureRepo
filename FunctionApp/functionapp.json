@@ -34,9 +34,9 @@
                       "description": "App Insights Name"
             }
         },
-        "asp_name_prefix":{
-          "type": "String"
-        }
+               "asp_name_prefix":{
+                   "type": "String"
+           }
          
     },
     "variables": {
@@ -58,13 +58,13 @@
                 "Environment": "[parameters('environment')]"
             },
             "sku": {
-                "name": "F1",
-                "tier": "Free",
-                "size": "F1",
-                "family": "F",
+                "name": "Y1",
+                "tier": "Dynamic",
+                "size": "Y1",
+                "family": "Y",
                 "capacity": 0
             },
-            "kind": "app",
+            "kind": "functionapp",
             "properties": {
                 "perSiteScaling": false,
                 "elasticScaleEnabled": false,
@@ -137,12 +137,24 @@
                       "value": "[parameters('storageaccountname')]"
                     },
                     {
-                      "name": "StorageAccessKey",
+                      "name": "containerKey",
                       "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageaccountname')), '2019-04-01').keys[0].value]"
                     },
                     {
                       "name": "StorageAccountUrl",
                       "value": "[concat('https://',parameters('storageaccountname'),'.blob.core.windows.net')]"
+                    },
+                    {
+                       "name": "profileBaseURL",
+                      "value": "https://www.valmont.com/employee/profile/"
+                    },
+                     {
+                       "name": "DataContainer",
+                      "value": "qrcodes"
+                    },
+                    {
+                       "name": "DataImageContainer",
+                      "value": "images"
                     }
                      
                       

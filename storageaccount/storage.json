@@ -17,9 +17,9 @@
         },
          /*Location will override with pipeline variable*/
          "location_prefix": {
-        "type": "string",
-        "metadata": {
-        "description": "Location prefix used in the resource name"
+            "type": "string",
+             "metadata": {
+             "description": "Location prefix used in the resource name"
            }
         }
     },
@@ -64,11 +64,8 @@
                     "keySource": "Microsoft.Storage"
                 },
                 "accessTier": "Hot"
-            },
-            "tags": {
-                "Environment": "[parameters('environment')]",
-                "Project": "Tech Innovation"
             }
+          
         }
            
     ],

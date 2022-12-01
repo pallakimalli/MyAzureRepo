@@ -2,21 +2,19 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-       
-        "apim_name_prefix": {
-            "value": "apim-mobile-app"
-        },
         
-        "environment": {
+        "appinsights_name_prefix": {
+            "value": "appi-orbitintegration"
+        },
+        "logworkspacename": {
+            "value": "log"
+        },
+        "environment":{
             "value": "stg"
         },
-    
         "location_prefix": {
             "value": "cus"
-        },
-         "appinsights_name": {
-            "value": "willoverride"
-        }   
-      
+        }
+        
     }
 }
