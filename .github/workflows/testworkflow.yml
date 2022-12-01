@@ -1,6 +1,6 @@
 on:
   workflow_dispatch
-  
+name: Test workflow  
 jobs:
  test_job:
   runs-on: ubuntu-latest  
