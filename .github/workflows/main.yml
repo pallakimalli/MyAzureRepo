@@ -21,7 +21,7 @@ jobs:
     - name: get storage name
       env: 
        stg_name: ${{ steps.deploy.outputs.storageacc_name }}
-      run: echo $stg_name
+      run: echo "stg_name=${{ steps.deploy.outputs.storageacc_name }}" >>$GITHUB_ENV
     - name: print storage name
-      run: echo my storage account name is $stg_name
+      run: echo my storage account name is ${{ env.stg_name }}
         
