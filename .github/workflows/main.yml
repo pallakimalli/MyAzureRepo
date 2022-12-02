@@ -42,8 +42,7 @@ jobs:
 
     - name: get appinsights name
       run: echo "insights_name=${{ steps.appinsights.outputs.appinsightsname }}" >>$GITHUB_ENV
-           echo my storage account name is ${{ env.stg_name }}
-
+      
     - uses: azure/arm-deploy@v1
       id: functionapp
       with:
