@@ -3,10 +3,10 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "workspace_name_prefix": {
-            "value": "log-orbitintegration"
+            "value": "log-app"
         },
         "environment":{
-            "value": "stg"
+            "value": "dev"
         },
         "location_prefix": {
             "value": "cus"

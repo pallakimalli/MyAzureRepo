@@ -3,10 +3,10 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "storageaccount_name_prefix": {
-            "value": "techinn"
+            "value": "techin"
         },
         "environment": {
-            "value": "stg"
+            "value": "dev"
         },
         "location_prefix": {
         "value": "cus"

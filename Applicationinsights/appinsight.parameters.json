@@ -4,13 +4,13 @@
     "parameters": {
         
         "appinsights_name_prefix": {
-            "value": "appi-orbitintegration"
+            "value": "appi-app"
         },
         "logworkspacename": {
             "value": "log"
         },
         "environment":{
-            "value": "stg"
+            "value": "dev"
         },
         "location_prefix": {
             "value": "cus"

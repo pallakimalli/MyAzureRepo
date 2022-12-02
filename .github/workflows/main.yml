@@ -12,16 +12,30 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     - uses: azure/arm-deploy@v1
-      id: deploy  
+      id: storage  
       with:
         resourceGroupName: TestRG
         template: storageaccount/storage.json
         parameters: storageaccount/storage.parameters.json
         
     - name: get storage name
-      env: 
-       stg_name: ${{ steps.deploy.outputs.storageacc_name }}
       run: echo "stg_name=${{ steps.deploy.outputs.storageacc_name }}" >>$GITHUB_ENV
     - name: print storage name
       run: echo my storage account name is ${{ env.stg_name }}
         
+    - uses: azure/arm-deploy@v1
+      id: workspace
+      with:
+        resourceGroupName: TestRG
+        template: logworkspace/workspace.json
+        parameters: logworkspace/workspace.parameters.json
+
+    - name: get workspace name
+      run: echo "workspace_name=${{ steps.workspace.outputs.workspace-name }}" >>$GITHUB_ENV
+
+    - uses: azure/arm-deploy@v1
+      id: appinsights
+      with:
+        resourceGroupName: TestRG
+        template: applicationinsights/appinsight.json
+        parameters: applicationinsights/appinsight.parameters.json logworkspacename=${{ env.workspace }}  
