@@ -96,10 +96,6 @@
                 "siteConfig": {
                   "appSettings": [
                     {
-                      "name": "AzureWebJobsStorage",
-                      "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageaccountname'), ';EndpointSuffix=', environment().suffixes.storage, ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts',parameters('storageaccountname')), '2019-06-01').keys[0].value)]"
-                    },
-                    {
                             "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
                             "value": "[reference(resourceId('microsoft.insights/components', parameters('appinsightsname')), '2015-05-01').InstrumentationKey]"
                     },
