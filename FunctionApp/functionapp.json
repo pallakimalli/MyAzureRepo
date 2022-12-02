@@ -52,11 +52,7 @@
             "type": "Microsoft.Web/serverfarms",
             "apiVersion": "2020-06-01",
             "name": "[variables('asp_name')]",
-            "location": "Central US",
-            "tags": {
-                "Project": "NEIGlobal Orbit Integration",
-                "Environment": "[parameters('environment')]"
-            },
+            "location": "[variables('location')]",
             "sku": {
                 "name": "Y1",
                 "tier": "Dynamic",
@@ -85,7 +81,7 @@
               "location": "[variables('location')]",
               "kind": "functionapp",
               "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', variables('asp_name'))]"
+                "[resourceId('Microsoft.Web/serverfarms/', variables('asp_name'))]"
               ],
               "identity": {
 		          "type": "SystemAssigned"

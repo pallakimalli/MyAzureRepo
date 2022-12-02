@@ -19,7 +19,7 @@ jobs:
         parameters: storageaccount/storage.parameters.json
         
     - name: get storage name
-      run: echo "stg_name=${{ steps.deploy.outputs.storageacc_name }}" >>$GITHUB_ENV
+      run: echo "stg_name=${{ steps.storage.outputs.storageacc_name }}" >>$GITHUB_ENV
     - name: print storage name
       run: echo my storage account name is ${{ env.stg_name }}
         
@@ -38,17 +38,17 @@ jobs:
       with:
         resourceGroupName: TestRG
         template: Applicationinsights/appinsight.json
-        parameters: Applicationinsights/appinsight.parameters.json logworkspacename=${{ env.workspace }}
+        parameters: Applicationinsights/appinsight.parameters.json logworkspacename=${{ env.workspace_name }}
 
     - name: get appinsights name
       run: echo "insights_name=${{ steps.appinsights.outputs.appinsightsname }}" >>$GITHUB_ENV
-
+      
     - uses: azure/arm-deploy@v1
       id: functionapp
       with:
         resourceGroupName: TestRG
-        template: Functionapp/functionapp.json
-        parameters: Functionapp/functionapp.parameters.json appinsightsname=${{ env.insights_name }} storageaccountname=${{ env.stg_name }}
+        template: FunctionApp/functionapp.json
+        parameters: FunctionApp/functionapp.parameters.json storageaccountname=${{ env.stg_name }} appinsightsname=${{ env.insights_name }}
 
     - uses: azure/arm-deploy@v1
       id: APIM
