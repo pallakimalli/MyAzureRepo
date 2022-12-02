@@ -53,10 +53,6 @@
             "apiVersion": "2020-06-01",
             "name": "[variables('asp_name')]",
             "location": "Central US",
-            "tags": {
-                "Project": "NEIGlobal Orbit Integration",
-                "Environment": "[parameters('environment')]"
-            },
             "sku": {
                 "name": "Y1",
                 "tier": "Dynamic",
