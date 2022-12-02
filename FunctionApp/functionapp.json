@@ -81,7 +81,7 @@
               "location": "[variables('location')]",
               "kind": "functionapp",
               "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', variables('asp_name'))]"
+                "[resourceId('Microsoft.Web/serverfarms/', variables('asp_name'))]"
               ],
               "identity": {
 		          "type": "SystemAssigned"
