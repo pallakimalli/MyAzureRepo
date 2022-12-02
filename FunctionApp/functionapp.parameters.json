@@ -3,10 +3,10 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
       "functionapp_name_prefix": {
-          "value": "func-mobileapp" 
+          "value": "func-app" 
     },
        "environment": {
-        "value": "stg"
+        "value": "dev"
     },
        "location_prefix": {
         "value": "cus"

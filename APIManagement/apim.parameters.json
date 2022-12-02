@@ -4,11 +4,11 @@
     "parameters": {
        
         "apim_name_prefix": {
-            "value": "apim-mobile-app"
+            "value": "apim-app"
         },
         
         "environment": {
-            "value": "stg"
+            "value": "dev"
         },
     
         "location_prefix": {
