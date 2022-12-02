@@ -49,7 +49,7 @@ jobs:
       with:
         resourceGroupName: TestRG
         template: FunctionApp/functionapp.json
-        parameters: FunctionApp/functionapp.parameters.json appinsightsname=${{ env.insights_name }} storageaccountname=${{ env.stg_name }}
+        parameters: FunctionApp/functionapp.parameters.json storageaccountname=${{ env.stg_name }} appinsightsname=${{ env.insights_name }}
 
     - uses: azure/arm-deploy@v1
       id: APIM
