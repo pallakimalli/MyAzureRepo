@@ -38,7 +38,7 @@ jobs:
       with:
         resourceGroupName: TestRG
         template: Applicationinsights/appinsight.json
-        parameters: Applicationinsights/appinsight.parameters.json logworkspacename=${{ env.workspace }}
+        parameters: Applicationinsights/appinsight.parameters.json logworkspacename=${{ env.workspace_name }}
 
     - name: get appinsights name
       run: echo "insights_name=${{ steps.appinsights.outputs.appinsightsname }}" >>$GITHUB_ENV
