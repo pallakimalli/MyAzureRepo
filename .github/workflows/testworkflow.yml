@@ -18,7 +18,11 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
-
+        
+    - name: Perform a Pester test from the command-line
+      shell: pwsh
+      run: ls
+        
     - name: 'Resolve Project Dependencies Using Dotnet'
       shell: pwsh
       run: |
