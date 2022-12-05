@@ -1,0 +1,21 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "Storage": "DefaultEndpointsProtocol=https;AccountName=stvalmontappdevcus001;AccountKey=hxLhSzlThr8Yj3UXB2geYOKrnfeAKdPEaE4oA8+KUMr8R9UGaS0Mo0uLjkDKiikYUJuoWKM3+4kX+ASttd8C6A==;EndpointSuffix=core.windows.net",
+    "DataContainer": "qrcodes",
+    "DataImageContainer": "images",
+    "StoragePath": "https://stvalmontappdevcus001.blob.core.windows.net/",
+    "ClientId": "750bd4fc-f00b-4b24-b5df-8d0be6cf843a",
+    "TenantId": "8346fbf0-fbc5-44ab-b351-632105f6266f",
+    "ClientSecret": "XeD8Q~dC5--KSbzrOoy37LpM6NEmEykYNLznhcW2",
+    "AppServiceClientId": "ac4ceb3e-cd7e-4a9b-9368-8aa29ab263b3",
+    "AppServiceTenantId": "8346fbf0-fbc5-44ab-b351-632105f6266f",
+    "AppServiceClientSecret": "E7X8Q~yvZpRjkWlqo4lZzGmQL9i2GgeXaZXTGcvX",
+    "blobPath": "https://stvalmontappdevcus001.blob.core.windows.net/images/VLogo1.png",
+    "qrCodeFunctionAppURL": "https://func-qrcodegenerator-dev-cus-001.azurewebsites.net/api/GenerateQRCode?code=1IIdx9yCt8xumofS1QlAF9GlK9h2jYXP7dauy59VtKkCAzFugba1lQ==",
+    "profileBaseURL": "https://www.valmont.com/employee/profile/",
+    "APPINSIGHTS_INSTRUMENTATIONKEY": "c16fec2a-5528-41c4-8801-fcf37c1c9421"
+  }
+}
