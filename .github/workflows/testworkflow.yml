@@ -27,14 +27,13 @@ jobs:
 
        
     - name: 'Build and package code'
-      shell: bash
       run: |
-       	   publishfolder="${{ github.workspace }}/output"
-       	   mkdir $publishfolder
-       	   cd $publishfolder
-       	   dotnet publish ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }} --configuration Release --output .
-       	   mkdir ${{ env.BUILD_OUTPUT_PATH }}
-       	   zip -r ${{ env.BUILD_OUTPUT_PATH }}/${{ env.BUILD_PACKAGE_NAME }} .
+           publishfolder="${{ github.workspace }}/output"
+           mkdir $publishfolder
+           cd $publishfolder
+           dotnet publish ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }} --configuration Release --output .
+           mkdir ${{ env.BUILD_OUTPUT_PATH }}
+           zip -r ${{ env.BUILD_OUTPUT_PATH }}/${{ env.BUILD_PACKAGE_NAME }} .
         
     - name: 'Package Azure Function release build'
       uses: actions/upload-artifact@v2
