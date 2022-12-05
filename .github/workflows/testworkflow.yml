@@ -1,13 +1,19 @@
 on:
-  workflow_dispatch:
+  workflow_dispatch
+  
 env:
-    DOTNET_VERSION: '6.0.9'
-      
-name: Test workflow  
+  AZURE_FUNCTIONAPP_NAME: 'func-qrcodegenerator-dev-cus-001'   # set this to your function app name on Azure
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'       # set this to the path to your function app project, defaults to the repository root
+  DOTNET_VERSION: '6.0.9'                   # set this to the dotnet version to use (e.g. '2.1.x', '3.1.x', '5.0.x')
+
 jobs:
- test_job:
-  runs-on: ubuntu-latest
-  steps:
+  Build:
+    runs-on: windows-latest
+    environment: dev
+    steps:
+    - name: 'Checkout GitHub Action'
+      uses: actions/checkout@v3
+
     - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
       uses: actions/setup-dotnet@v3
       with:
