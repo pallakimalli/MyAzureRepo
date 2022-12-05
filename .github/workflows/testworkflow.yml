@@ -24,10 +24,7 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
-        
-    - name: Perform a Pester test from the command-line
-      shell: pwsh
-      run: ls
+
        
     - name: 'Build and package code'
       shell: bash
