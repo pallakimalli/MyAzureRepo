@@ -15,7 +15,7 @@ jobs:
       uses: actions/checkout@v3
       with:
           repository: pallakimalli/MyAzureRepo
-          path: 'MyAzureRepo/ValmontApp.QRCode'
+          path: 'ValmontApp.QRCode'
       
     - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
       uses: actions/setup-dotnet@v3
