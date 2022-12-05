@@ -22,15 +22,15 @@ jobs:
     - name: Perform a Pester test from the command-line
       shell: pwsh
       run: ls
-        
-    - name: 'Resolve Project Dependencies Using Dotnet'
-      shell: pwsh
-      run: |
-        pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-        dotnet build --configuration Release --output ./output
-        popd
+       
+    - name: Build with dotnet
+      run: dotnet build --configuration Release
+ 
+    - name: dotnet publish
+      run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+      
     - name: Upload artifact for deployment
       uses: actions/upload-artifact@v2
       with:
           name: Function-app
-          path: './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+          path: '${{env.DOTNET_ROOT}}/myapp'
