@@ -1,6 +1,9 @@
+
 on:
   workflow_dispatch
   
+name: testworkflow
+
 env:
   AZURE_FUNCTIONAPP_NAME: 'func-qrcodegenerator-dev-cus-001'   # set this to your function app name on Azure
       
@@ -8,6 +11,7 @@ env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: '${{ github.workspace }}/ValmontApp.QRCode'
   BUILD_OUTPUT_PATH: '${{ github.workspace }}/build-artifacts'
   BUILD_PACKAGE_NAME: 'az-func.zip'
+  
 jobs:
   Build:
     runs-on: ubuntu-latest
